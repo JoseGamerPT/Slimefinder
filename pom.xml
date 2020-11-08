@@ -4,7 +4,7 @@
 
   <groupId>io.github.feydk</groupId>
   <artifactId>Slimefinder</artifactId>
-  <version>0.2</version>
+  <version>0.3</version>
   <packaging>jar</packaging>
 
   <name>Slimefinder</name>
@@ -24,38 +24,6 @@
       <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
     </repository>
   </repositories>
-
-  <dependencies>
-    <!-- CraftBukkit API -->
-    <dependency>
-      <groupId>org.bukkit</groupId>
-      <artifactId>bukkit</artifactId>
-      <version>1.14.4-R0.1-SNAPSHOT</version>
-      <scope>provided</scope>
-    </dependency>
-    <!-- Lombok -->
-    <dependency>
-      <groupId>org.projectlombok</groupId>
-      <artifactId>lombok</artifactId>
-      <version>1.16.20</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.bukkit</groupId>
-      <artifactId>bukkit</artifactId>
-      <version>1.14.4-R0.1-SNAPSHOT</version>
-    </dependency>
-    <dependency>
-      <groupId>org.bukkit</groupId>
-      <artifactId>bukkit</artifactId>
-      <version>1.14.4-R0.1-SNAPSHOT</version>
-    </dependency>
-    <dependency>
-      <groupId>org.bukkit</groupId>
-      <artifactId>bukkit</artifactId>
-      <version>1.14.4-R0.1-SNAPSHOT</version>
-    </dependency>
-  </dependencies>
 
   <build>
     <sourceDirectory>

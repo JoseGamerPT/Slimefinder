@@ -1,6 +1,8 @@
 package io.github.feydk.Slimefinder;
 
-import org.bukkit.*;
+import org.bukkit.ChatColor;
+import org.bukkit.Chunk;
+import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -15,97 +17,74 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.Random;
 
-public final class SlimefinderPlugin extends JavaPlugin implements Listener
-{
-	private String wandBlock = "SLIME_BALL";
-	private Material wandMaterial = null;
+public final class SlimefinderPlugin extends JavaPlugin implements Listener {
 
-	@Override
-	public void onEnable()
-	{
-		reloadConfig();
-		wandBlock = getConfig().getString("wand-block", "SLIME_BALL");
-		wandMaterial = Material.getMaterial(wandBlock);
-		getConfig().options().copyDefaults(true);
-		saveConfig();
+    private String wandBlock = "SLIME_BALL";
+    private Material wandMaterial = null;
 
-		getServer().getPluginManager().registerEvents(this, this);
-	}
+    @Override
+    public void onEnable() {
+        reloadConfig();
+        wandBlock = getConfig().getString("wand-block", "SLIME_BALL");
+        wandMaterial = Material.getMaterial(wandBlock);
+        getConfig().options().copyDefaults(true);
+        saveConfig();
 
-	@Override
-	public void onDisable()
-	{
-	}
+        getServer().getPluginManager().registerEvents(this, this);
+    }
 
-	@Override
-	public boolean onCommand(CommandSender sender, Command command, String label, String args[])
-	{
-		Player player = null;
+    @Override
+    public void onDisable() {  }
 
-		if(sender instanceof Player)
-			player = (Player)sender;
+    @Override
+    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+        Player player = null;
 
-		if(player == null)
-		{
-			sender.sendMessage("Player expected");
-			return true;
-		}
+        if (sender instanceof Player)
+            player = (Player) sender;
 
-		if(args.length > 0)
-			return false;
+        if (player == null) {
+            sender.sendMessage("Command cannot be run on console.");
+            return true;
+        }
 
-		Chunk chunk = player.getWorld().getChunkAt(player.getLocation());
-		int x = chunk.getX();
-		int z = chunk.getZ();
+        Chunk chunk = player.getWorld().getChunkAt(player.getLocation());
 
-		boolean isSlimy = isSlimeChunk(player, x, z);
+        isSlimeChunk(player, chunk.getX(), chunk.getZ());
 
-		revealResult(isSlimy, player);
+        return true;
+    }
 
-		return true;
-	}
+    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
+    void onPlayerInteract(PlayerInteractEvent event) {
+        Action action = event.getAction();
 
-	@EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
-	void onPlayerInteract(PlayerInteractEvent event)
-	{
-		Action action = event.getAction();
+        if (action == Action.LEFT_CLICK_AIR || action == Action.PHYSICAL)
+            return;
 
-		if(action == Action.LEFT_CLICK_AIR || action == Action.PHYSICAL)
-			return;
+        Player player = event.getPlayer();
+        ItemStack itemInHand = player.getInventory().getItemInMainHand();
+        Material materialInHand = itemInHand.getType();
+        Block clickedBlock = event.getClickedBlock();
 
-		Player player = event.getPlayer();
-		ItemStack itemInHand = player.getItemInHand();
-		Material materialInHand = itemInHand.getType();
-		Block clickedBlock = event.getClickedBlock();
+        if (action == Action.LEFT_CLICK_BLOCK && clickedBlock != null && materialInHand == wandMaterial) {
+            Chunk chunk = clickedBlock.getChunk();
 
-		if(action == Action.LEFT_CLICK_BLOCK && clickedBlock != null && materialInHand == wandMaterial)
-		{
-			Chunk chunk = clickedBlock.getChunk();
-			int x = chunk.getX();
-			int z = chunk.getZ();
+            isSlimeChunk(player, chunk.getX(), chunk.getZ());
 
-			boolean isSlimy = isSlimeChunk(player, x, z);
+            event.setCancelled(true);
+        }
+    }
 
-			revealResult(isSlimy, player);
+    private void isSlimeChunk(Player player, int x, int z) {
+        long seed = player.getWorld().getSeed();
 
-			event.setCancelled(true);
-		}
-	}
+        Random rnd = new Random(seed + (long) (x * x * 0x4c1906) + (long) (x * 0x5ac0db) + (long) (z * z) * 0x4307a7L + (long) (z * 0x5f24f) ^ 0x3ad8025f);
 
-	private void revealResult(boolean isSlimy, Player player)
-	{
-		if(isSlimy)
-			player.sendMessage(" " + ChatColor.GREEN + "✔" + ChatColor.AQUA + " This " + ChatColor.UNDERLINE + "is" + ChatColor.RESET + ChatColor.AQUA + " a slime chunk." + ChatColor.RESET + "");
-		else
-			player.sendMessage(" " + ChatColor.RED + "✘" + ChatColor.AQUA + " This is " + ChatColor.UNDERLINE + "not" + ChatColor.RESET + ChatColor.AQUA + " a slime chunk." + ChatColor.RESET + "");
-	}
-
-	private boolean isSlimeChunk(Player player, int x, int z)
-	{
-		long seed = player.getWorld().getSeed();
-
-		Random rnd = new Random(seed + (long) (x * x * 0x4c1906) + (long) (x * 0x5ac0db) + (long) (z * z) * 0x4307a7L + (long) (z * 0x5f24f) ^ 0x3ad8025f);
-
-		return rnd.nextInt(10) == 0;
-	}
+        if (rnd.nextInt(10) == 0) {
+            player.sendMessage(" " + ChatColor.GREEN + "✔" + ChatColor.AQUA + " This " + ChatColor.UNDERLINE + "is" + ChatColor.RESET + ChatColor.AQUA + " a slime chunk." + ChatColor.RESET + "");
+        } else {
+            player.sendMessage(" " + ChatColor.RED + "✘" + ChatColor.AQUA + " This is " + ChatColor.UNDERLINE + "not" + ChatColor.RESET + ChatColor.AQUA + " a slime chunk." + ChatColor.RESET + "");
+        }
+    }
 }
